@@ -1,5 +1,11 @@
 # app/config.py
 from pydantic_settings import BaseSettings
+import os
+
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:postgres@localhost:5432/postgres"  # fallback for local dev
+)
 
 class Settings(BaseSettings):
     database_url: str

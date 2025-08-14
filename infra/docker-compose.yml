@@ -16,6 +16,8 @@ services:
       - db
     env_file:
       - ../backend/.env
+    networks:
+      - ecs-network
 
   celery:
     build:
@@ -51,6 +53,11 @@ services:
       POSTGRES_DB: ecs_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ecs-network
+
+networks:
+  ecs-network:
 
 volumes:
   postgres_data:
