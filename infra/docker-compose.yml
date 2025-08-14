@@ -1,0 +1,40 @@
+# docker-compose.yml
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: ecs
+    ports:
+      - "5432:5432"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672" # management UI
+  backend:
+    build:
+      context: ../backend
+    env_file:
+      - ../backend/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - rabbitmq
+      - redis
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  worker:
+    build: ../backend
+    command: celery -A app.tasks.example.celery_app worker --loglevel=info
+    env_file:
+      - ../backend/.env
+    depends_on:
+      - rabbitmq
+      - redis
+
