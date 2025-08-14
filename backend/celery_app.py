@@ -9,7 +9,7 @@ celery_app = Celery(
     "ecs_tasks",
     broker=broker_url,
     backend=result_backend,
-    include=["app.tasks.example"]  # Ensure tasks.py is in the same directory or package
+    include=["app.tasks.example", "app.tasks.credit"]  # Include all task modules
 )
 
 celery_app.conf.update(
