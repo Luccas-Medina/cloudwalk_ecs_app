@@ -1,40 +1,56 @@
-# docker-compose.yml
+version: '3.8'
+
 services:
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: ecs
+  backend:
+    build:
+      context: ../backend       # Path from infra to backend
+      dockerfile: Dockerfile    # Inside backend folder
+    container_name: ecs-backend
     ports:
-      - "5432:5432"
+      - "8000:8000"
+    volumes:
+      - ../backend/app:/app/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - db
+    env_file:
+      - ../backend/.env
+
+  celery:
+    build:
+      context: ../backend       # Path from infra to backend
+      dockerfile: Dockerfile    # Inside backend folder
+    container_name: ecs_celery
+    command: celery -A app.tasks.example worker --loglevel=info
+    volumes:
+      - ../backend:/app
+    depends_on:
+      - rabbitmq
+      - backend
+    environment:
+      CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      CELERY_RESULT_BACKEND: rpc://
 
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: ecs_rabbitmq
     ports:
       - "5672:5672"
-      - "15672:15672" # management UI
-  backend:
-    build:
-      context: ../backend
-    env_file:
-      - ../backend/.env
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-      - rabbitmq
-      - redis
-  redis:
-    image: redis:7
-    ports:
-      - "6379:6379"
-  worker:
-    build: ../backend
-    command: celery -A app.tasks.example.celery_app worker --loglevel=info
-    env_file:
-      - ../backend/.env
-    depends_on:
-      - rabbitmq
-      - redis
+      - "15672:15672"
 
+  db:
+    image: postgres:15
+    container_name: ecs-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ecs_user
+      POSTGRES_PASSWORD: ecs_pass
+      POSTGRES_DB: ecs_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

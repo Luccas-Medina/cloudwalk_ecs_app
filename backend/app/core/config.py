@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str
@@ -12,8 +12,12 @@ class Settings(BaseSettings):
     redis_port: int
     celery_broker_url: str
     celery_result_backend: str
+    database_url: str
+    rabbitmq_url: str
+    secret_key: str
+    basic_auth_user: str
+    basic_auth_pass: str
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(extra="allow", env_file=".env")
 
 settings = Settings()
