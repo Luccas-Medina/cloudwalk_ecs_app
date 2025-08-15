@@ -1,5 +1,5 @@
 # app/config.py
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 
 DATABASE_URL = os.getenv(
@@ -14,8 +14,7 @@ class Settings(BaseSettings):
     basic_auth_user: str
     basic_auth_pass: str
     log_level: str = "INFO"
-
-    class Config:
-        env_file = ".env"
+    ingest_token: str | None = None
+    model_config = SettingsConfigDict(extra="allow", env_file=".env")
 
 settings = Settings()

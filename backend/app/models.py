@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from app.core.db import Base
 
 class User(Base):
@@ -27,9 +28,17 @@ class Transaction(Base):
 class EmotionalEvent(Base):
     __tablename__ = "emotional_events"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    emotion = Column(String, nullable=False)
-    intensity = Column(Float)
-    timestamp = Column(DateTime)
+
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    session_id = Column(String, index=True, nullable=True)
+    source = Column(String, nullable=True)           # "text" | "voice" | "face" | "survey" | etc.
+    emotion_label = Column(String, nullable=True)    # "joy" | "anger" | ...
+    valence = Column(Float, nullable=True)           # [-1..1] or [0..1], your choice
+    arousal = Column(Float, nullable=True)           # [0..1]
+    confidence = Column(Float, nullable=True)        # [0..1]
+    raw_payload = Column(JSONB, nullable=True)       # raw flexible message
+
+    timestamp = Column(DateTime(timezone=True), nullable=True)  # event’s own ts (if provided)
+    ingested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     user = relationship("User", back_populates="emotional_events")

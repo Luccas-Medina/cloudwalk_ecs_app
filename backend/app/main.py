@@ -3,6 +3,14 @@ from fastapi import FastAPI, Depends
 from .logging import init_logging
 from .auth import basic_auth
 from app.core.config import settings
+from dotenv import load_dotenv
+import os
+
+# Load variables from .env into environment
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 init_logging()
 
@@ -11,9 +19,13 @@ app = FastAPI(title=settings.app_name, version="0.1.0")
 # Import and include routers after app is created
 from app.api import credit
 from app.api.credit import status_router
+from app.api import emotion_ws
 
 app.include_router(status_router)
 app.include_router(credit.router)
+
+# Mount the WS router
+app.include_router(emotion_ws.router)
 
 @app.get("/healthz")
 def health_check_auth(auth: bool = Depends(basic_auth)):
