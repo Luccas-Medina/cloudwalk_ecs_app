@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Header, status
-from app.core.config import settings
+from app.config import settings
 from app.tasks.emotion_ingest import persist_emotion_event
 
 router = APIRouter(prefix="/ws", tags=["emotions"])

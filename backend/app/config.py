@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     basic_auth_pass: str
     log_level: str = "INFO"
     ingest_token: str | None = None
-    model_config = SettingsConfigDict(extra="allow", env_file=".env")
+    app_name: str = "Empathic Credit System API"
+    model_config = SettingsConfigDict(
+        extra="allow", 
+        env_file=".env",
+        case_sensitive=False  # This allows INGEST_TOKEN to match ingest_token
+    )
 
 settings = Settings()
