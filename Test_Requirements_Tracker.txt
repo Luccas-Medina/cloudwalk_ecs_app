@@ -5,11 +5,11 @@
 [X]	Implement a listening system that captures a stream of emotional data from users.
 
 > #### Machine Learning Integration:
-[ ]	Integrate a pre-trained machine learning model into your system. You do not need to build this model yourself.
+[X]	Integrate a pre-trained machine learning model into your system. You do not need to build this model yourself.
 
-[ ] Design the interface for calling this pre-trained model.
-[ ] Determine which features from your processed emotional and financial data should be passed to the model.
-[ ] Integrate the model's output (credit risk score) into your credit limit calculation process.
+[X] Design the interface for calling this pre-trained model.
+[X] Determine which features from your processed emotional and financial data should be passed to the model.
+[X] Integrate the model's output (credit risk score) into your credit limit calculation process.
 
 > #### Credit Limit API:
 [ ]	Create a RESTful API endpoint that calculates and returns The ML model result. If the user was approved for a credit line, The credit limit and interest rate and Credit type (e.g., Short-Term, Long-Term)
