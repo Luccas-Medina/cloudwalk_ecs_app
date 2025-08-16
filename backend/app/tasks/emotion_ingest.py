@@ -9,6 +9,7 @@ import json
 
 from app.core.db import SessionLocal
 from app.models import EmotionalEvent, User
+
 from app.services.emotion_analysis import EmotionAnalyzer
 import dateutil.parser as dtparse  # add python-dateutil to requirements if not present
 

@@ -74,7 +74,14 @@ def test_credit_service_integration():
     try:
         from app.services.credit_service import calculate_credit_offer
         from app.db import SessionLocal
-        from app.models import User, Transaction, EmotionalEvent
+        # Import models directly from models.py file to avoid registry conflicts  
+        import sys
+        import os
+        sys.path.insert(0, "backend/app")
+        import models as models_module
+        User = models_module.User
+        Transaction = models_module.Transaction
+        EmotionalEvent = models_module.EmotionalEvent
         from sqlalchemy import func
         
         # Mock user ID (assuming test data exists)

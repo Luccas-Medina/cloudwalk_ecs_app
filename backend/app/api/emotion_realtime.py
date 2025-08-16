@@ -155,8 +155,8 @@ class ConnectionManager:
                 'timestamp': datetime.now(),
                 'user_id': event.user_id,
                 'session_id': session_id,
-                'source': event.source,
-                'emotion_label': event.emotion_label,
+                'source': event.source.value if event.source else None,
+                'emotion_label': event.emotion_label.value if event.emotion_label else None,
                 'valence': event.valence,
                 'arousal': event.arousal
             })

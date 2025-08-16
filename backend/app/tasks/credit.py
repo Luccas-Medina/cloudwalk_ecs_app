@@ -2,10 +2,9 @@ from celery import shared_task
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.core.db import SessionLocal
-from app.models import User
+from app.models import User, EmotionalEvent
 from app.services.credit_service import calculate_credit_offer
 from sqlalchemy import func
-from app.models import EmotionalEvent
 
 @shared_task(name="evaluate_credit_task")
 def evaluate_credit(user_id: int):
@@ -15,9 +14,22 @@ def evaluate_credit(user_id: int):
     """
     db: Session = SessionLocal()
     try:
+        # Debug: Check if User model is available
+        if User is None:
+            return {"status": "error", "message": "User model not available - import failed"}
+        
+        # Debug: Log the user lookup attempt
+        print(f"Looking up user with ID: {user_id}")
+        
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
-            return {"status": "error", "message": "User not found"}
+            # Debug: Check if any users exist
+            user_count = db.query(User).count()
+            return {
+                "status": "error", 
+                "message": f"User {user_id} not found. Total users in DB: {user_count}",
+                "debug_info": {"requested_user_id": user_id, "total_users": user_count}
+            }
 
         # Use the integrated credit service with ML model
         credit_result = calculate_credit_offer(user_id)
@@ -36,6 +48,13 @@ def evaluate_credit(user_id: int):
         }
     except Exception as e:
         db.rollback()
-        return {"status": "error", "message": str(e)}
+        return {
+            "status": "error", 
+            "message": str(e),
+            "debug_info": {
+                "requested_user_id": user_id,
+                "exception_type": type(e).__name__
+            }
+        }
     finally:
         db.close()

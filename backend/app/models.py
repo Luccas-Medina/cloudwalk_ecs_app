@@ -5,6 +5,7 @@ from app.core.db import Base
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True)
@@ -17,6 +18,7 @@ class User(Base):
 
 class Transaction(Base):
     __tablename__ = "transactions"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     amount = Column(Float, nullable=False)
@@ -27,6 +29,7 @@ class Transaction(Base):
 
 class EmotionalEvent(Base):
     __tablename__ = "emotional_events"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
 
     user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)

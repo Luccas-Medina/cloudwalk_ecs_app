@@ -195,6 +195,8 @@ def get_current_credit_limits(user_id: int):
     """Get current credit information for a user without running ML evaluation"""
     try:
         from app.core.db import SessionLocal
+        
+        # Import User model to avoid any conflicts
         from app.models import User
         
         db = SessionLocal()

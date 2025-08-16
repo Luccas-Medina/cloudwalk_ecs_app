@@ -26,9 +26,11 @@ from app.api import credit
 from app.api.credit import status_router
 from app.api import emotion_ws
 from app.api import emotion_realtime
+from app.api import credit_deployment  # Re-enabled with fixed imports
 
 app.include_router(status_router)
 app.include_router(credit.router)
+app.include_router(credit_deployment.router)  # Credit deployment - re-enabled
 
 # Mount the WebSocket routers
 app.include_router(emotion_ws.router)  # Legacy emotion WebSocket

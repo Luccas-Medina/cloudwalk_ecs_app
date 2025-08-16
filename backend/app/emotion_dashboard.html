@@ -323,10 +323,13 @@
         class EmotionDashboard {
             constructor() {
                 this.metricsSocket = null;
+                this.streamSocket = null;
                 this.isConnected = false;
                 this.emotionData = [];
                 this.maxDataPoints = 100;
                 this.simulationRunning = false;
+                this.currentUserId = 1;
+                this.currentSessionId = `session_${Date.now()}`;
                 
                 this.emotionColors = {
                     joy: '#4CAF50',
@@ -351,15 +354,13 @@
                 
                 // Connect to metrics WebSocket
                 const token = 'dev_ingest_token_please_change';
-                const wsUrl = `ws://localhost:8000/ws/emotions/metrics?token=${token}`;
+                const metricsUrl = `ws://localhost:8000/ws/emotions/metrics?token=${token}`;
                 
-                this.metricsSocket = new WebSocket(wsUrl);
+                this.metricsSocket = new WebSocket(metricsUrl);
                 
                 this.metricsSocket.onopen = () => {
-                    this.isConnected = true;
-                    this.updateConnectionStatus('connected');
-                    document.getElementById('connect-btn').textContent = 'Disconnect';
                     console.log('Connected to emotion metrics stream');
+                    this.connectEmotionStream();
                 };
                 
                 this.metricsSocket.onmessage = (event) => {
@@ -374,14 +375,45 @@
                 };
                 
                 this.metricsSocket.onerror = (error) => {
-                    console.error('WebSocket error:', error);
+                    console.error('Metrics WebSocket error:', error);
                     this.updateConnectionStatus('disconnected');
+                };
+            }
+            
+            connectEmotionStream() {
+                // Connect to emotion stream for sending events
+                const token = 'dev_ingest_token_please_change';
+                const streamUrl = `ws://localhost:8000/ws/emotions/stream?user_id=${this.currentUserId}&session_id=${this.currentSessionId}&token=${token}`;
+                
+                this.streamSocket = new WebSocket(streamUrl);
+                
+                this.streamSocket.onopen = () => {
+                    this.isConnected = true;
+                    this.updateConnectionStatus('connected');
+                    document.getElementById('connect-btn').textContent = 'Disconnect';
+                    console.log('Connected to emotion stream');
+                };
+                
+                this.streamSocket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log('Stream response:', data);
+                };
+                
+                this.streamSocket.onclose = () => {
+                    console.log('Emotion stream disconnected');
+                };
+                
+                this.streamSocket.onerror = (error) => {
+                    console.error('Stream WebSocket error:', error);
                 };
             }
             
             disconnect() {
                 if (this.metricsSocket) {
                     this.metricsSocket.close();
+                }
+                if (this.streamSocket) {
+                    this.streamSocket.close();
                 }
             }
             
@@ -438,6 +470,12 @@
                     confidence: 0.7 + Math.random() * 0.3
                 };
                 
+                // Send event to backend if connected
+                if (this.streamSocket && this.streamSocket.readyState === WebSocket.OPEN) {
+                    this.streamSocket.send(JSON.stringify(event));
+                }
+                
+                // Also add to local display
                 this.addEmotionEvent(event);
             }
             
