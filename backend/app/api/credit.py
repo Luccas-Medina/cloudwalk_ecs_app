@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from app.auth import basic_auth
 from app.tasks.credit import evaluate_credit
 from app.services.credit_service import calculate_credit_offer
 from celery.result import AsyncResult
@@ -42,7 +43,7 @@ class AsyncCreditResponse(BaseModel):
 router = APIRouter(prefix="/credit", tags=["credit"])
 
 @router.post("/calculate/{user_id}", response_model=CreditLimitAPIResponse)
-def calculate_credit_limit(user_id: int):
+def calculate_credit_limit(user_id: int, auth: bool = Depends(basic_auth)):
     """
     RESTful API endpoint that calculates and returns:
     1) The ML model result and approval decision
@@ -94,7 +95,7 @@ def calculate_credit_limit(user_id: int):
         raise HTTPException(status_code=500, detail=f"Credit calculation failed: {str(e)}")
 
 @router.get("/calculate/{user_id}", response_model=CreditLimitAPIResponse)
-def get_credit_limit(user_id: int):
+def get_credit_limit(user_id: int, auth: bool = Depends(basic_auth)):
     """
     Alternative GET endpoint for credit limit calculation.
     Same functionality as POST but follows REST conventions for read operations.
@@ -102,7 +103,7 @@ def get_credit_limit(user_id: int):
     return calculate_credit_limit(user_id)
 
 @router.post("/evaluate/{user_id}", response_model=AsyncCreditResponse)
-def evaluate_credit_endpoint(user_id: int):
+def evaluate_credit_endpoint(user_id: int, auth: bool = Depends(basic_auth)):
     """
     Trigger asynchronous credit evaluation for a given user.
     Returns Celery task ID for long-running operations.
@@ -113,7 +114,7 @@ def evaluate_credit_endpoint(user_id: int):
 status_router = APIRouter(prefix="/credit/status", tags=["credit"])
 
 @status_router.get("/{task_id}")
-def credit_status(task_id: str):
+def credit_status(task_id: str, auth: bool = Depends(basic_auth)):
     """Get the status of an asynchronous credit evaluation task"""
     task_result = AsyncResult(task_id)
     if task_result.state == "PENDING":
@@ -125,7 +126,7 @@ def credit_status(task_id: str):
 
 # Additional utility endpoints
 @router.get("/demo/{user_id}")
-def credit_limit_demo(user_id: int):
+def credit_limit_demo(user_id: int, auth: bool = Depends(basic_auth)):
     """
     Demo endpoint showing the complete credit limit calculation process.
     Perfect for testing and demonstrating the API requirements.
@@ -174,7 +175,7 @@ def credit_limit_demo(user_id: int):
         raise HTTPException(status_code=500, detail=f"Demo failed: {str(e)}")
 
 @router.get("/model/info")
-def get_ml_model_info():
+def get_ml_model_info(auth: bool = Depends(basic_auth)):
     """Get information about the ML model being used"""
     from app.ml.model import get_credit_risk_model
     
@@ -191,7 +192,7 @@ def get_ml_model_info():
     }
 
 @router.get("/limits/{user_id}")
-def get_current_credit_limits(user_id: int):
+def get_current_credit_limits(user_id: int, auth: bool = Depends(basic_auth)):
     """Get current credit information for a user without running ML evaluation"""
     try:
         from app.core.db import SessionLocal

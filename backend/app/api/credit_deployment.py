@@ -1,5 +1,6 @@
 # app/api/credit_deployment.py
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
+from app.auth import basic_auth
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
@@ -74,7 +75,8 @@ class UserCreditSummary(BaseModel):
 def create_credit_offer(
     offer_data: CreditOfferCreate,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    auth: bool = Depends(basic_auth)
 ):
     """
     Create a new credit offer for a user
@@ -121,7 +123,8 @@ def accept_credit_offer(
     offer_id: int,
     acceptance_data: OfferAcceptanceRequest,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    auth: bool = Depends(basic_auth)
 ):
     """
     Accept a credit offer and trigger asynchronous deployment
@@ -178,7 +181,8 @@ def accept_credit_offer(
 def get_deployment_status(
     offer_id: int,
     user_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    auth: bool = Depends(basic_auth)
 ):
     """
     Get real-time status of credit offer deployment
@@ -239,7 +243,8 @@ def get_deployment_status(
 def get_user_credit_offers(
     user_id: int,
     status: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    auth: bool = Depends(basic_auth)
 ):
     """Get all credit offers for a user, optionally filtered by status"""
     try:
@@ -258,7 +263,8 @@ def get_user_credit_offers(
 @router.get("/users/{user_id}/summary", response_model=UserCreditSummary)
 def get_user_credit_summary(
     user_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    auth: bool = Depends(basic_auth)
 ):
     """Get comprehensive credit summary for a user"""
     try:
@@ -312,7 +318,8 @@ def send_test_notification(
     title: str,
     message: str,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    auth: bool = Depends(basic_auth)
 ):
     """Send a test notification (for development/testing)"""
     try:
