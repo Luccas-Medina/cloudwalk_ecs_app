@@ -12,10 +12,10 @@
 [X] Integrate the model's output (credit risk score) into your credit limit calculation process.
 
 > #### Credit Limit API:
-[ ]	Create a RESTful API endpoint that calculates and returns The ML model result. If the user was approved for a credit line, The credit limit and interest rate and Credit type (e.g., Short-Term, Long-Term)
+[X]	Create a RESTful API endpoint that calculates and returns The ML model result. If the user was approved for a credit line, The credit limit and interest rate and Credit type (e.g., Short-Term, Long-Term)
 
 > #### User Profile Database:
-[ ]	Design and implement a database schema to store user profiles, including their transaction history, current credit limits, and emotional data.
+[X]	Design and implement a database schema to store user profiles, including their transaction history, current credit limits, and emotional data.
 
 > #### Credit Limit Deployment and Notification:
 [ ]	Design and implement a mechanism to apply approved credit offers to user accounts. Once a credit offer is accepted, your system should update the user’s profile in the database and notify the user via the mobile app.
@@ -30,7 +30,7 @@
 
 > #### Database Schema and Queries:
 [X]	Design a relational schema for users, transactions, credit limits and emotional events. Include primary/foreign keys and indexes where appropriate to ensure efficient queries.
-[ ] Provide at least two example SQL queries in your documentation—for example, retrieving all emotional events for a user in the last week or identifying high‑risk customers based on credit score thresholds.
+[X] Provide at least two example SQL queries in your documentation—for example, retrieving all emotional events for a user in the last week or identifying high‑risk customers based on credit score thresholds.
 
 > #### Real‑Time Data Streaming:
 [X]	Implement a mechanism to consume and process emotional data in real time. You may choose a streaming technology such as Kafka, RabbitMQ or Pub/Sub, or any other method appropriate for your implementation.
