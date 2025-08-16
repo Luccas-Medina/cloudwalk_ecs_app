@@ -18,15 +18,15 @@
 [X]	Design and implement a database schema to store user profiles, including their transaction history, current credit limits, and emotional data.
 
 > #### Credit Limit Deployment and Notification:
-[ ]	Design and implement a mechanism to apply approved credit offers to user accounts. Once a credit offer is accepted, your system should update the user’s profile in the database and notify the user via the mobile app.
+[X]	Design and implement a mechanism to apply approved credit offers to user accounts. Once a credit offer is accepted, your system should update the user’s profile in the database and notify the user via the mobile app.
 
 > #### Observability and Logging:
-[ ]	Implement structured logging and write logs to standard output (STDOUT). Your logs should contain enough context (e.g., request identifiers, user IDs) to trace issues across services.
+[X]	Implement structured logging and write logs to standard output (STDOUT). Your logs should contain enough context (e.g., request identifiers, user IDs) to trace issues across services.
 [X]	Expose a basic /healthz (or similar) endpoint for health‑check probes and service monitoring. You may optionally add metrics or tracing instrumentation.
 
 > #### Configuration and Security:
 [X]	Store configuration values such as database URLs, credentials and external endpoints in environment variables rather than hard‑coding them or checking them into source control.
-[ ]	Protect your APIs with an authentication mechanism of your choice (for example, HTTP Basic Auth or token‑based authentication). Ensure secrets are handled securely.
+[X]	Protect your APIs with an authentication mechanism of your choice (for example, HTTP Basic Auth or token‑based authentication). Ensure secrets are handled securely.
 
 > #### Database Schema and Queries:
 [X]	Design a relational schema for users, transactions, credit limits and emotional events. Include primary/foreign keys and indexes where appropriate to ensure efficient queries.
