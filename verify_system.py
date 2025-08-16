@@ -1,10 +1,30 @@
 #!/usr/bin/env python3
 """
-CloudWalk ECS App - Final Verification Report
-=============================================
+CloudWalk ECS App - System Verification Script
+==============================================
 
-This script performs a complete functionality test to verify all systems
-are working correctly before repository commit.
+This script performs comprehensive system verification to ensure all 
+CloudWalk ECS App functionalities are working correctly.
+
+Usage:
+    python verify_system.py
+
+Requirements:
+    - Docker Compose services running (run: docker-compose up -d)
+    - Python dependencies installed (websockets, requests)
+    - Backend accessible on localhost:8000
+
+The script tests:
+    ✅ Core Systems (Backend, Dashboard)
+    ✅ Credit Evaluation & Deployment 
+    ✅ Real-time Emotion Processing
+    ✅ WebSocket Connections
+    ✅ API Integrations
+    ✅ Background Task Processing
+
+Exit Codes:
+    0 - All systems operational
+    1 - Some systems failed verification
 """
 
 import asyncio
