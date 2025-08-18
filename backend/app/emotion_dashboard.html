@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudWalk Emotion Processing - Real-time Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            grid-template-rows: auto auto auto;
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .metric {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .emotion-events {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .event {
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 5px;
+        }
+        
+        .event.positive { border-left-color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
+        .event.negative { border-left-color: #f44336; background: rgba(244, 67, 54, 0.1); }
+        .event.neutral { border-left-color: #9E9E9E; background: rgba(158, 158, 158, 0.1); }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .status.connected { background: #4CAF50; color: white; }
+        .status.disconnected { background: #f44336; color: white; }
+        .status.connecting { background: #ff9800; color: white; }
+        
+        .visualization {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            grid-column: 1 / -1;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .valence-arousal-plot {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #ffebee 0%, #e8f5e8 50%, #fff3e0 100%);
+        }
+        
+        .plot-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            transform: translate(-50%, -50%);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .plot-point.recent {
+            width: 12px;
+            height: 12px;
+            background: #f5576c;
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(245, 87, 108, 0.5);
+        }
+        
+        .plot-axes {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: #999;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+        
+        .plot-axes::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #999;
+            top: 50%;
+            left: -50%;
+            transform: translateY(-50%);
+        }
+        
+        .emotion-timeline {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+        }
+        
+        .timeline-time {
+            font-size: 0.8em;
+            color: #666;
+            margin-right: 10px;
+            min-width: 80px;
+        }
+        
+        .timeline-emotion {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        
+        .risk-indicator {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .risk-low { background: #4CAF50; color: white; }
+        .risk-medium { background: #ff9800; color: white; }
+        .risk-high { background: #f44336; color: white; }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .visualization {
+                grid-column: 1;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🧠 CloudWalk Emotion Processing System</h1>
+            <p>Real-time Emotional Intelligence Dashboard</p>
+            <span id="connection-status" class="status disconnected">Disconnected</span>
+        </div>
+        
+        <div class="card">
+            <h3>🎛️ System Controls</h3>
+            <div class="controls">
+                <button id="connect-btn" onclick="connectMetrics()">Connect to Metrics</button>
+                <button id="simulate-btn" onclick="startSimulation()">Start Simulation</button>
+                <button id="clear-btn" onclick="clearData()">Clear Data</button>
+                <button id="export-btn" onclick="exportData()">Export Data</button>
+            </div>
+            
+            <h4>📊 Real-time Metrics</h4>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="total-events">0</div>
+                    <div>Total Events</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="events-per-minute">0</div>
+                    <div>Events/Min</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="active-users">0</div>
+                    <div>Active Users</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="avg-valence">0.0</div>
+                    <div>Avg Valence</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="avg-arousal">0.0</div>
+                    <div>Avg Arousal</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="dominant-emotion">-</div>
+                    <div>Dominant Emotion</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>⚡ Live Emotion Events</h3>
+            <div id="emotion-events" class="emotion-events">
+                <p>No events received yet. Connect to start monitoring.</p>
+            </div>
+        </div>
+        
+        <div class="visualization">
+            <div class="chart-container">
+                <h3>📈 Valence-Arousal Plot</h3>
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+                    Real-time emotional state visualization
+                </p>
+                <div class="valence-arousal-plot" id="valence-arousal-plot">
+                    <div class="plot-axes"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8em; color: #666;">
+                    <span>Negative ← Valence → Positive</span>
+                    <span>Low ← Arousal → High</span>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>⏰ Emotion Timeline</h3>
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+                    Chronological emotion sequence
+                </p>
+                <div id="emotion-timeline" class="emotion-timeline">
+                    <p>No timeline data available</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EmotionDashboard {
+            constructor() {
+                this.metricsSocket = null;
+                this.streamSocket = null;
+                this.isConnected = false;
+                this.emotionData = [];
+                this.maxDataPoints = 100;
+                this.simulationRunning = false;
+                this.currentUserId = 1;
+                this.currentSessionId = `session_${Date.now()}`;
+                
+                this.emotionColors = {
+                    joy: '#4CAF50',
+                    sadness: '#2196F3',
+                    anger: '#f44336',
+                    fear: '#9C27B0',
+                    trust: '#00BCD4',
+                    disgust: '#795548',
+                    surprise: '#FF9800',
+                    anticipation: '#CDDC39',
+                    neutral: '#9E9E9E'
+                };
+            }
+            
+            connectMetrics() {
+                if (this.isConnected) {
+                    this.disconnect();
+                    return;
+                }
+                
+                this.updateConnectionStatus('connecting');
+                
+                // Connect to metrics WebSocket
+                const token = 'dev_ingest_token_please_change';
+                const metricsUrl = `ws://localhost:8000/ws/emotions/metrics?token=${token}`;
+                
+                this.metricsSocket = new WebSocket(metricsUrl);
+                
+                this.metricsSocket.onopen = () => {
+                    console.log('Connected to emotion metrics stream');
+                    this.connectEmotionStream();
+                };
+                
+                this.metricsSocket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    this.updateMetrics(data.metrics);
+                };
+                
+                this.metricsSocket.onclose = () => {
+                    this.isConnected = false;
+                    this.updateConnectionStatus('disconnected');
+                    document.getElementById('connect-btn').textContent = 'Connect to Metrics';
+                };
+                
+                this.metricsSocket.onerror = (error) => {
+                    console.error('Metrics WebSocket error:', error);
+                    this.updateConnectionStatus('disconnected');
+                };
+            }
+            
+            connectEmotionStream() {
+                // Connect to emotion stream for sending events
+                const token = 'dev_ingest_token_please_change';
+                const streamUrl = `ws://localhost:8000/ws/emotions/stream?user_id=${this.currentUserId}&session_id=${this.currentSessionId}&token=${token}`;
+                
+                this.streamSocket = new WebSocket(streamUrl);
+                
+                this.streamSocket.onopen = () => {
+                    this.isConnected = true;
+                    this.updateConnectionStatus('connected');
+                    document.getElementById('connect-btn').textContent = 'Disconnect';
+                    console.log('Connected to emotion stream');
+                };
+                
+                this.streamSocket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log('Stream response:', data);
+                };
+                
+                this.streamSocket.onclose = () => {
+                    console.log('Emotion stream disconnected');
+                };
+                
+                this.streamSocket.onerror = (error) => {
+                    console.error('Stream WebSocket error:', error);
+                };
+            }
+            
+            disconnect() {
+                if (this.metricsSocket) {
+                    this.metricsSocket.close();
+                }
+                if (this.streamSocket) {
+                    this.streamSocket.close();
+                }
+            }
+            
+            updateConnectionStatus(status) {
+                const statusElement = document.getElementById('connection-status');
+                statusElement.className = `status ${status}`;
+                statusElement.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            }
+            
+            updateMetrics(metrics) {
+                document.getElementById('total-events').textContent = metrics.total_events || 0;
+                document.getElementById('events-per-minute').textContent = metrics.events_per_minute || 0;
+                document.getElementById('active-users').textContent = metrics.unique_users || 0;
+                document.getElementById('avg-valence').textContent = (metrics.avg_valence || 0).toFixed(2);
+                document.getElementById('avg-arousal').textContent = (metrics.avg_arousal || 0).toFixed(2);
+                document.getElementById('dominant-emotion').textContent = metrics.dominant_emotion || '-';
+            }
+            
+            startSimulation() {
+                if (this.simulationRunning) {
+                    this.stopSimulation();
+                    return;
+                }
+                
+                this.simulationRunning = true;
+                document.getElementById('simulate-btn').textContent = 'Stop Simulation';
+                
+                // Simulate emotion events for demonstration
+                this.simulationInterval = setInterval(() => {
+                    this.generateMockEvent();
+                }, 2000);
+            }
+            
+            stopSimulation() {
+                this.simulationRunning = false;
+                document.getElementById('simulate-btn').textContent = 'Start Simulation';
+                
+                if (this.simulationInterval) {
+                    clearInterval(this.simulationInterval);
+                }
+            }
+            
+            generateMockEvent() {
+                const emotions = ['joy', 'sadness', 'anger', 'fear', 'neutral', 'surprise'];
+                const sources = ['text', 'voice', 'facial', 'physiological'];
+                
+                const event = {
+                    user_id: Math.floor(Math.random() * 10) + 1,
+                    emotion_label: emotions[Math.floor(Math.random() * emotions.length)],
+                    valence: (Math.random() - 0.5) * 2, // -1 to 1
+                    arousal: Math.random(), // 0 to 1
+                    source: sources[Math.floor(Math.random() * sources.length)],
+                    timestamp: new Date().toISOString(),
+                    confidence: 0.7 + Math.random() * 0.3
+                };
+                
+                // Send event to backend if connected
+                if (this.streamSocket && this.streamSocket.readyState === WebSocket.OPEN) {
+                    this.streamSocket.send(JSON.stringify(event));
+                }
+                
+                // Also add to local display
+                this.addEmotionEvent(event);
+            }
+            
+            addEmotionEvent(event) {
+                this.emotionData.push(event);
+                
+                // Keep only recent events
+                if (this.emotionData.length > this.maxDataPoints) {
+                    this.emotionData.shift();
+                }
+                
+                this.updateEventsList();
+                this.updateVisualization();
+            }
+            
+            updateEventsList() {
+                const container = document.getElementById('emotion-events');
+                const recentEvents = this.emotionData.slice(-10).reverse();
+                
+                container.innerHTML = recentEvents.map(event => {
+                    const valenceClass = event.valence > 0.2 ? 'positive' : 
+                                       event.valence < -0.2 ? 'negative' : 'neutral';
+                    
+                    const time = new Date(event.timestamp).toLocaleTimeString();
+                    
+                    return `
+                        <div class="event ${valenceClass}">
+                            <strong>User ${event.user_id}</strong> - 
+                            <span style="background: ${this.emotionColors[event.emotion_label] || '#ccc'}; 
+                                         color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em;">
+                                ${event.emotion_label}
+                            </span>
+                            <br>
+                            <small>
+                                ${time} | Valence: ${event.valence.toFixed(2)} | 
+                                Arousal: ${event.arousal.toFixed(2)} | 
+                                Source: ${event.source}
+                            </small>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            updateVisualization() {
+                this.updateValenceArousalPlot();
+                this.updateTimeline();
+            }
+            
+            updateValenceArousalPlot() {
+                const plot = document.getElementById('valence-arousal-plot');
+                const plotRect = plot.getBoundingClientRect();
+                
+                // Clear existing points
+                plot.querySelectorAll('.plot-point').forEach(point => point.remove());
+                
+                // Add recent events as points
+                const recentEvents = this.emotionData.slice(-20);
+                
+                recentEvents.forEach((event, index) => {
+                    const point = document.createElement('div');
+                    point.className = 'plot-point';
+                    
+                    if (index === recentEvents.length - 1) {
+                        point.classList.add('recent');
+                    }
+                    
+                    // Convert valence (-1 to 1) and arousal (0 to 1) to plot coordinates
+                    const x = ((event.valence + 1) / 2) * 100; // 0 to 100%
+                    const y = (1 - event.arousal) * 100; // Invert Y axis
+                    
+                    point.style.left = `${x}%`;
+                    point.style.top = `${y}%`;
+                    point.style.background = this.emotionColors[event.emotion_label] || '#667eea';
+                    
+                    point.title = `${event.emotion_label} (${event.valence.toFixed(2)}, ${event.arousal.toFixed(2)})`;
+                    
+                    plot.appendChild(point);
+                });
+            }
+            
+            updateTimeline() {
+                const timeline = document.getElementById('emotion-timeline');
+                const recentEvents = this.emotionData.slice(-15).reverse();
+                
+                timeline.innerHTML = recentEvents.map(event => {
+                    const time = new Date(event.timestamp).toLocaleTimeString().slice(0, 8);
+                    const riskLevel = this.calculateRiskLevel(event.valence, event.arousal);
+                    
+                    return `
+                        <div class="timeline-item">
+                            <div class="timeline-time">${time}</div>
+                            <div class="timeline-emotion" style="background: ${this.emotionColors[event.emotion_label] || '#ccc'}; color: white;">
+                                ${event.emotion_label}
+                            </div>
+                            <div class="risk-indicator risk-${riskLevel}">
+                                ${riskLevel.toUpperCase()}
+                            </div>
+                            <div style="margin-left: auto; font-size: 0.8em; color: #666;">
+                                User ${event.user_id}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            calculateRiskLevel(valence, arousal) {
+                if (valence < -0.4 && arousal > 0.6) return 'high';
+                if (valence < -0.2 || arousal > 0.8) return 'medium';
+                return 'low';
+            }
+            
+            clearData() {
+                this.emotionData = [];
+                this.updateEventsList();
+                this.updateVisualization();
+                
+                // Reset metrics
+                document.getElementById('total-events').textContent = '0';
+                document.getElementById('events-per-minute').textContent = '0';
+                document.getElementById('active-users').textContent = '0';
+                document.getElementById('avg-valence').textContent = '0.0';
+                document.getElementById('avg-arousal').textContent = '0.0';
+                document.getElementById('dominant-emotion').textContent = '-';
+            }
+            
+            exportData() {
+                const dataStr = JSON.stringify(this.emotionData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `emotion_data_${new Date().toISOString().slice(0, 10)}.json`;
+                link.click();
+            }
+        }
+        
+        // Initialize dashboard
+        const dashboard = new EmotionDashboard();
+        
+        // Global functions for buttons
+        function connectMetrics() {
+            dashboard.connectMetrics();
+        }
+        
+        function startSimulation() {
+            dashboard.startSimulation();
+        }
+        
+        function clearData() {
+            dashboard.clearData();
+        }
+        
+        function exportData() {
+            dashboard.exportData();
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            console.log('CloudWalk Emotion Dashboard initialized');
+        });
+    </script>
+</body>
+</html>

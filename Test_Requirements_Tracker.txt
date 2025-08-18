@@ -1,0 +1,49 @@
+####  System Architecture Diagram:
+[X]	Create a comprehensive system architecture diagram that illustrates the flow of data and interactions between different components of the Empathic Credit System.
+
+> #### Real-time Emotion Processing:
+[X]	Implement a listening system that captures a stream of emotional data from users.
+
+> #### Machine Learning Integration:
+[X]	Integrate a pre-trained machine learning model into your system. You do not need to build this model yourself.
+
+[X] Design the interface for calling this pre-trained model.
+[X] Determine which features from your processed emotional and financial data should be passed to the model.
+[X] Integrate the model's output (credit risk score) into your credit limit calculation process.
+
+> #### Credit Limit API:
+[X]	Create a RESTful API endpoint that calculates and returns The ML model result. If the user was approved for a credit line, The credit limit and interest rate and Credit type (e.g., Short-Term, Long-Term)
+
+> #### User Profile Database:
+[X]	Design and implement a database schema to store user profiles, including their transaction history, current credit limits, and emotional data.
+
+> #### Credit Limit Deployment and Notification:
+[X]	Design and implement a mechanism to apply approved credit offers to user accounts. Once a credit offer is accepted, your system should update the user’s profile in the database and notify the user via the mobile app.
+
+> #### Observability and Logging:
+[X]	Implement structured logging and write logs to standard output (STDOUT). Your logs should contain enough context (e.g., request identifiers, user IDs) to trace issues across services.
+[X]	Expose a basic /healthz (or similar) endpoint for health‑check probes and service monitoring. You may optionally add metrics or tracing instrumentation.
+
+> #### Configuration and Security:
+[X]	Store configuration values such as database URLs, credentials and external endpoints in environment variables rather than hard‑coding them or checking them into source control.
+[X]	Protect your APIs with an authentication mechanism of your choice (for example, HTTP Basic Auth or token‑based authentication). Ensure secrets are handled securely.
+
+> #### Database Schema and Queries:
+[X]	Design a relational schema for users, transactions, credit limits and emotional events. Include primary/foreign keys and indexes where appropriate to ensure efficient queries.
+[X] Provide at least two example SQL queries in your documentation—for example, retrieving all emotional events for a user in the last week or identifying high‑risk customers based on credit score thresholds.
+
+> #### Real‑Time Data Streaming:
+[X]	Implement a mechanism to consume and process emotional data in real time. You may choose a streaming technology such as Kafka, RabbitMQ or Pub/Sub, or any other method appropriate for your implementation.
+[X]	Ensure that your system can handle concurrent messages and recover gracefully from transient errors.
+
+> #### Data Privacy and Ethics:
+[X]	Include a brief section in your documentation outlining how you would handle sensitive emotional data. Consider encryption at rest/in transit, pseudonymisation/anonymisation techniques and compliance with data protection regulations (e.g., LGPD). Explain any trade‑offs or assumptions you make.
+
+> #### Circuit Breaker Pattern:
+[X]	Design a circuit breaker pattern to handle potential failures in the machine learning model service.
+
+> #### Data Privacy Strategy (NEW):
+[X]	Propose a comprehensive strategy for handling data privacy concerns related to emotional data processing.
+
+> #### Emotional Data Analysis (NEW):
+[X]	Provide insights on trends and key takeaways of the emotions captured, including analysis depending on live emotion events on dashboard.
